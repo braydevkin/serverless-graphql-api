@@ -22,7 +22,7 @@ I choose this tech's cause it's a great option to create large faster applicatio
 <h5>Architecture</h5>
 </br>
 
-![diagram](/docs/diagram.png?raw=true "Diagram")
+![diagram](/docs/diagram.jpg?raw=true "Diagram")
 
 <h5>Install dependencies</h5>
 
