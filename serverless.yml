@@ -1,0 +1,75 @@
+service: backend
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-1
+  memorySize: 512
+
+iamRoleStatements:
+  - Effect: "Allow"
+    Action:
+      - "kms:Decrypt"
+      - "ssm:GetParameter"
+      - dynamodb:DescribeTable
+      - dynamodb:Query
+      - dynamodb:Scan
+      - dynamodb:GetItem
+      - dynamodb:PutItem
+      - dynamodb:UpdateItem
+      - dynamodb:DeleteItem
+    Resource:
+      - "*"
+
+resources:
+  Resources:
+    NotesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${env:DYNAMODB_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: productId
+            AttributeType: S
+          - AttributeName: noteId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: productId
+            KeyType: HASH
+          - AttributeName: noteId
+            KeyType: RANGE
+        # Set the capacity to auto-scale
+        BillingMode: PAY_PER_REQUEST
+    OutputBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${env:FILE_NAME}
+        AccessControl: PublicRead
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - HEAD
+              AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+
+functions:
+  graphql:
+    handler: handler.create
+    events:
+      - http:
+          path: create
+          method: post
+          cors: true
+
+custom: ${file(ymls/custom.yml)}
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-dynamodb-locals
+  - serverless-offline
